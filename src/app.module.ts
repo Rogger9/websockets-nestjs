@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import config, { database } from './config';
 import { validationSchema } from './config/env.validation';
 import { DatabaseModule } from './modules/database/database.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DatabaseModule } from './modules/database/database.module';
       validationSchema,
     }),
     DatabaseModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
