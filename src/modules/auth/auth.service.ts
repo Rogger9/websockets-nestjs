@@ -25,7 +25,7 @@ export class AuthService {
   async login({ name, password }: LoginDto) {
     const user = await this.userRepository.findOne({
       where: { name },
-      select: { name: true, password: true },
+      select: { name: true, password: true, id: true },
     });
     const isMatchPass = !!user && (await validateHash(password, user.password));
 
