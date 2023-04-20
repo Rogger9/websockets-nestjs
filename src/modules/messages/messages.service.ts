@@ -17,7 +17,7 @@ export class MessagesService {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) throw new Error('User not found');
 
-    this.checkUserConnection(user);
+    this.checkUserConnection(user.id);
 
     this.connectedClients[client.id] = { socket: client, user };
   }
@@ -34,14 +34,10 @@ export class MessagesService {
     return this.connectedClients[clientId].user.name;
   }
 
-  private checkUserConnection(user: User) {
-    for (const clientId of Object.keys(this.connectedClients)) {
-      const connectedClient = this.connectedClients[clientId];
-
-      if (connectedClient.user.id === user.id) {
-        connectedClient.socket.disconnect();
-        break;
-      }
-    }
+  private checkUserConnection(userId: string) {
+    Object.entries(this.connectedClients).forEach(([, { user, socket }]) => {
+      if (user.id !== userId) return;
+      socket.disconnect();
+    });
   }
 }
