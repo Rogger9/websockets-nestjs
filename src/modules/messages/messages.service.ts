@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Socket } from 'socket.io';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { IConnectedClients } from './interfaces/connectedClients.interface';
+import { IConnectedClients, IMessage, TypeNotify } from './interfaces';
 
 @Injectable()
 export class MessagesService {
   private connectedClients: Record<string, IConnectedClients> = {};
+  private readonly botName = 'Bot';
 
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
@@ -27,11 +28,26 @@ export class MessagesService {
   }
 
   getConnectedClients(): string[] {
-    return Object.keys(this.connectedClients);
+    return Object.values(this.connectedClients).map(({ user }) => user.name);
   }
 
   getUserName(clientId: string) {
     return this.connectedClients[clientId].user.name;
+  }
+
+  notify(type: TypeNotify, clientId: string) {
+    const { user } = this.connectedClients[clientId];
+    const discMessage: IMessage = {
+      fullName: this.botName,
+      message: `User ${user.name} has disconnected`,
+    };
+    const joinMessage: IMessage = {
+      fullName: this.botName,
+      message: `User ${user.name} has joined the chat`,
+    };
+    const msg = type === 'join' ? joinMessage : discMessage;
+
+    return msg;
   }
 
   private checkUserConnection(userId: string) {

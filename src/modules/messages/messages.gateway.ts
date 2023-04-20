@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtPayload } from '../auth/interfaces/payload.interface';
 import { MessageDto } from './dtos/new-message.dto';
+import { IMessage } from './interfaces';
 import { MessagesService } from './messages.service';
 
 @WebSocketGateway({ cors: true })
@@ -33,9 +34,13 @@ export class MessagesGateway
     }
 
     this.clientsUpdated();
+    const message = this.messagesService.notify('join', client.id);
+    this.emitMessage(message);
   }
 
   handleDisconnect(client: Socket) {
+    const message = this.messagesService.notify('disconnect', client.id);
+    this.emitMessage(message);
     this.messagesService.removeClient(client.id);
     this.clientsUpdated();
   }
@@ -47,7 +52,11 @@ export class MessagesGateway
       message,
     };
 
-    this.wss.emit('message-server', data);
+    this.emitMessage(data);
+  }
+
+  emitMessage(data: IMessage) {
+    return this.wss.emit('message-server', data);
   }
 
   private clientsUpdated() {
